@@ -1,0 +1,67 @@
+import pandas as pd
+import numpy as np
+
+np.random.seed(42)
+
+# Number of samples
+n = 300
+
+data = []
+
+for _ in range(n):
+    disease = np.random.choice(["COVID", "Flu", "Dengue"])
+
+    # Base probabilities (realistic patterns)
+    if disease == "COVID":
+        fever = np.random.choice([1, 0], p=[0.9, 0.1])
+        cough = np.random.choice([1, 0], p=[0.8, 0.2])
+        fatigue = np.random.choice([1, 0], p=[0.7, 0.3])
+        headache = np.random.choice([1, 0], p=[0.5, 0.5])
+        rash = 0
+        loss_smell = np.random.choice([1, 0], p=[0.7, 0.3])
+        joint_pain = np.random.choice([1, 0], p=[0.3, 0.7])
+        platelets = np.random.normal(220000, 30000)
+
+    elif disease == "Flu":
+        fever = np.random.choice([1, 0], p=[0.85, 0.15])
+        cough = np.random.choice([1, 0], p=[0.75, 0.25])
+        fatigue = np.random.choice([1, 0], p=[0.8, 0.2])
+        headache = np.random.choice([1, 0], p=[0.6, 0.4])
+        rash = 0
+        loss_smell = np.random.choice([1, 0], p=[0.2, 0.8])
+        joint_pain = np.random.choice([1, 0], p=[0.4, 0.6])
+        platelets = np.random.normal(250000, 25000)
+
+    else:  # Dengue
+        fever = 1
+        cough = np.random.choice([1, 0], p=[0.2, 0.8])
+        fatigue = np.random.choice([1, 0], p=[0.7, 0.3])
+        headache = np.random.choice([1, 0], p=[0.75, 0.25])
+        rash = np.random.choice([1, 0], p=[0.6, 0.4])
+        loss_smell = 0
+        joint_pain = np.random.choice([1, 0], p=[0.8, 0.2])
+        platelets = np.random.normal(100000, 20000)
+
+    data.append([
+        fever, cough, fatigue, headache,
+        rash, loss_smell, joint_pain,
+        int(platelets), disease
+    ])
+
+# Create DataFrame
+df = pd.DataFrame(data, columns=[
+    "Fever", "Cough", "Fatigue", "Headache",
+    "Rash", "Loss_of_Smell", "Joint_Pain",
+    "Platelet_Count", "Disease"
+])
+
+# Save dataset
+df.to_csv("diagnostic_dataset.csv", index=False)
+
+# Show sample
+df.head()
+from sklearn.preprocessing import LabelEncoder
+
+le = LabelEncoder()
+df["Disease_Label"] = le.fit_transform(df["Disease"])
+df.head()
