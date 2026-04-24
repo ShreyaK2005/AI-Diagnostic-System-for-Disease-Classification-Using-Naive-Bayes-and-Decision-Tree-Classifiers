@@ -1,0 +1,96 @@
+# =========================
+# 1. IMPORT LIBRARIES
+# =========================
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier, export_text
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+# =========================
+# 2. LOAD DATASET
+# =========================
+df = pd.read_csv("diagnostic_dataset.csv")
+
+# Features & Labels
+X = df.drop("Disease", axis=1)
+y = df["Disease"]
+
+# =========================
+# 3. TRAIN-TEST SPLIT
+# =========================
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# =========================
+# 4. NAIVE BAYES MODEL
+# =========================
+nb_model = GaussianNB()
+nb_model.fit(X_train, y_train)
+
+nb_preds = nb_model.predict(X_test)
+
+print("Naive Bayes Accuracy:", accuracy_score(y_test, nb_preds))
+
+# =========================
+# 5. DECISION TREE MODEL
+# =========================
+dt_model = DecisionTreeClassifier(max_depth=3, random_state=42)
+dt_model.fit(X_train, y_train)
+
+dt_preds = dt_model.predict(X_test)
+
+print("Decision Tree Accuracy:", accuracy_score(y_test, dt_preds))
+
+# =========================
+# 6. CONFUSION MATRIX
+# =========================
+print("\nConfusion Matrix (Decision Tree):")
+print(confusion_matrix(y_test, dt_preds))
+
+# =========================
+# 7. DECISION TREE RULES (VERY IMPORTANT FOR VIVA)
+# =========================
+tree_rules = export_text(dt_model, feature_names=list(X.columns))
+print("\nDecision Tree Rules:\n")
+print(tree_rules)
+
+# =========================
+# 8. TEST WITH NEW PATIENT
+# =========================
+
+# Example patient (you can change values)
+sample = pd.DataFrame([{
+    "Fever": 1,
+    "Cough": 1,
+    "Fatigue": 1,
+    "Headache": 0,
+    "Rash": 0,
+    "Loss_of_Smell": 1,
+    "Joint_Pain": 0,
+    "Platelet_Count": 210000
+}])
+
+# Naive Bayes Prediction (Probabilities)
+nb_prob = nb_model.predict_proba(sample)
+nb_pred = nb_model.predict(sample)
+
+# Decision Tree Prediction
+dt_pred = dt_model.predict(sample)
+
+# =========================
+# 9. OUTPUT (HYBRID REASONING)
+# =========================
+print("\n===== DIAGNOSTIC RESULT =====")
+
+print("Predicted Disease (Naive Bayes):", nb_pred[0])
+print("Predicted Disease (Decision Tree):", dt_pred[0])
+
+print("\nProbabilities:")
+for disease, prob in zip(nb_model.classes_, nb_prob[0]):
+    print(f"{disease}: {prob:.2f}")
+
+print("\nInterpretation:")
+print("Naive Bayes gives probability-based reasoning.")
+print("Decision Tree provides rule-based explanation.")
