@@ -1,0 +1,90 @@
+import ipywidgets as widgets
+from IPython.display import display
+
+# =========================
+# CREATE INPUT WIDGETS
+# =========================
+
+fever = widgets.ToggleButtons(options=[0,1], description='Fever')
+cough = widgets.ToggleButtons(options=[0,1], description='Cough')
+fatigue = widgets.ToggleButtons(options=[0,1], description='Fatigue')
+headache = widgets.ToggleButtons(options=[0,1], description='Headache')
+rash = widgets.ToggleButtons(options=[0,1], description='Rash')
+loss_smell = widgets.ToggleButtons(options=[0,1], description='LossSmell')
+joint_pain = widgets.ToggleButtons(options=[0,1], description='JointPain')
+platelets = widgets.IntText(value=200000, description='Platelets')
+
+button = widgets.Button(description="Diagnose", button_style='success')
+
+output = widgets.Output()
+
+# =========================
+# EXPLANATION FUNCTION
+# =========================
+
+def generate_explanation(sample, prediction):
+    s = sample.iloc[0]
+
+    if prediction == "COVID":
+        if s["Loss_of_Smell"] == 1 and s["Cough"] == 1:
+            return "Presence of loss of smell and cough strongly indicates COVID-19."
+        else:
+            return "Respiratory symptoms pattern suggests COVID-19."
+
+    elif prediction == "Flu":
+        if s["Fever"] == 1 and s["Fatigue"] == 1:
+            return "Fever with fatigue and absence of unique COVID/Dengue markers suggests Flu."
+        else:
+            return "General viral symptom pattern is consistent with Flu."
+
+    else:  # Dengue
+        if s["Rash"] == 1 or s["Joint_Pain"] == 1:
+            return "Rash/joint pain along with fever suggests Dengue infection."
+        else:
+            return "Low platelet count and fever pattern indicate Dengue."
+
+# =========================
+# BUTTON ACTION
+# =========================
+
+def on_button_click(b):
+    with output:
+        output.clear_output()
+
+        # Create input sample
+        sample = pd.DataFrame([{
+            "Fever": fever.value,
+            "Cough": cough.value,
+            "Fatigue": fatigue.value,
+            "Headache": headache.value,
+            "Rash": rash.value,
+            "Loss_of_Smell": loss_smell.value,
+            "Joint_Pain": joint_pain.value,
+            "Platelet_Count": platelets.value
+        }])
+
+        # Predictions
+        nb_prob = nb_model.predict_proba(sample)
+        nb_pred = nb_model.predict(sample)[0]
+
+        # Output
+        print("===== DIAGNOSTIC RESULT =====\n")
+        print("Predicted Disease:", nb_pred)
+
+        print("\nProbabilities:")
+        for disease, prob in zip(nb_model.classes_, nb_prob[0]):
+            print(f"{disease}: {prob:.2f}")
+
+        # One-line explanation
+        explanation = generate_explanation(sample, nb_pred)
+        print("\nExplanation:")
+        print(explanation)
+
+# Link button
+button.on_click(on_button_click)
+
+# =========================
+# DISPLAY UI
+# =========================
+
+display(fever, cough, fatigue, headache, rash, loss_smell, joint_pain, platelets, button, output)
