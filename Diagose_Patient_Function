@@ -1,0 +1,42 @@
+def diagnose_patient():
+    print("\nEnter patient symptoms (1 = Yes, 0 = No)\n")
+
+    fever = int(input("Fever (1/0): "))
+    cough = int(input("Cough (1/0): "))
+    fatigue = int(input("Fatigue (1/0): "))
+    headache = int(input("Headache (1/0): "))
+    rash = int(input("Rash (1/0): "))
+    loss_smell = int(input("Loss of Smell (1/0): "))
+    joint_pain = int(input("Joint Pain (1/0): "))
+    platelets = int(input("Platelet Count (e.g. 200000): "))
+
+    # Create input dataframe
+    sample = pd.DataFrame([{
+        "Fever": fever,
+        "Cough": cough,
+        "Fatigue": fatigue,
+        "Headache": headache,
+        "Rash": rash,
+        "Loss_of_Smell": loss_smell,
+        "Joint_Pain": joint_pain,
+        "Platelet_Count": platelets
+    }])
+
+    # Naive Bayes Prediction
+    nb_prob = nb_model.predict_proba(sample)
+    nb_pred = nb_model.predict(sample)
+
+    # Decision Tree Prediction
+    dt_pred = dt_model.predict(sample)
+
+    # Output
+    print("\n===== DIAGNOSTIC RESULT =====")
+    print("Final Prediction:", nb_pred[0])
+
+    print("\nProbabilities:")
+    for disease, prob in zip(nb_model.classes_, nb_prob[0]):
+        print(f"{disease}: {prob:.2f}")
+
+    print("\nDecision Tree Reasoning:")
+    print("(Based on symptom rules learned from data)")
+    print("Predicted:", dt_pred[0])
